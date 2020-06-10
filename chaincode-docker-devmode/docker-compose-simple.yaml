@@ -31,9 +31,15 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
+      ###以下是添加的内容
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+      ##### 富查询需要配置CouchDB
     volumes:
-        - /var/run/:/host/var/run/
-        - ./msp:/etc/hyperledger/msp
+      - /var/run/:/host/var/run/
+      - ./msp:/etc/hyperledger/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start --peer-chaincodedev=true
     ports:
@@ -41,6 +47,19 @@ services:
       - 7053:7053
     depends_on:
       - orderer
+      ###以下是添加的内容
+      - couchdb
+  couchdb:
+    container_name: couchdb
+    image: hyperledger/fabric-couchdb
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB. This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - 5984:5984
+
 
   cli:
     container_name: cli
@@ -57,10 +76,10 @@ services:
     working_dir: /opt/gopath/src/chaincodedev
     command: /bin/bash -c './script.sh'
     volumes:
-        - /var/run/:/host/var/run/
-        - ./msp:/etc/hyperledger/msp
-        - ./../chaincode:/opt/gopath/src/chaincodedev/chaincode
-        - ./:/opt/gopath/src/chaincodedev/
+      - /var/run/:/host/var/run/
+      - ./msp:/etc/hyperledger/msp
+      - ./../chaincode:/opt/gopath/src/chaincodedev/chaincode
+      - ./:/opt/gopath/src/chaincodedev/
     depends_on:
       - orderer
       - peer
@@ -80,9 +99,9 @@ services:
     working_dir: /opt/gopath/src/chaincode
     command: /bin/sh -c 'sleep 6000000'
     volumes:
-        - /var/run/:/host/var/run/
-        - ./msp:/etc/hyperledger/msp
-        - ./../chaincode:/opt/gopath/src/chaincode
+      - /var/run/:/host/var/run/
+      - ./msp:/etc/hyperledger/msp
+      - ./../chaincode:/opt/gopath/src/chaincode
     depends_on:
       - orderer
       - peer

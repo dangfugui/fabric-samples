@@ -84,6 +84,10 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "query" {
 		// the old "Query" is now implemtned in invoke
 		return t.query(stub, args)
+	} else if function == "set" {
+		return t.set(stub, args)
+	} else if function == "get" { // assume 'get' even if fn is nil
+		return t.set(stub, args)
 	}
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
@@ -196,4 +200,40 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Set stores the asset (both key and value) on the ledger. If the key exists,
+// it will override the value with the new one
+func (t *SimpleChaincode) set(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) < 2 {
+		fmt.Println("Incorrect arguments. Expecting a key and a value")
+		return shim.Error("Incorrect arguments. Expecting a key and a value")
+	}
+
+	err := stub.PutState(args[0], []byte(args[1]))
+	if err != nil {
+		fmt.Println("Failed to set asset: %s", args[0])
+		return shim.Error("Failed to set asset: %s" + args[0])
+	}
+	return shim.Success([]byte(args[1]))
+}
+
+// Get returns the value of the specified asset key
+func (t *SimpleChaincode) get(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) < 1 {
+		fmt.Println("Incorrect arguments. Expecting a key and a value")
+		return shim.Error("Incorrect arguments. Expecting a key and a value")
+	}
+
+	value, err := stub.GetState(args[0])
+	if err != nil {
+		fmt.Println("Failed to get asset: %s with error: %s", args[0], err.Error())
+		return shim.Error("Failed to get asset:" + err.Error())
+	}
+	if value == nil {
+		fmt.Println("Asset not found: %s", args[0])
+	}
+	return shim.Success(value)
 }

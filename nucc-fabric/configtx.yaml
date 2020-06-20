@@ -1,0 +1,351 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+## 创建创世块文件 -genesis.block
+### configtxgen -profile OrgsOrdererGenesis -channelID nuccchannel -outputBlock ./channel-artifacts/genesis.block
+## 创建通道文件
+### configtxgen -profile OrgsChannel -outputCreateChannelTx ./channel-artifacts/nuccchannel.tx -channelID nuccchannel
+### 列出通道命令  peer channel list
+###
+################################################################################
+#
+#   Section: Organizations  关于组织的配置
+#
+################################################################################
+Organizations:      # 组织列表 固定格式
+    - &OrdererOrg   # 排序节点组织
+        Name: OrdererOrg        # 排序节点的组织名
+        ID: OrdererMSP          # 排序节点的组织ID
+        # MSPDir 组织账号|身份信息 文件
+        MSPDir: crypto-config/ordererOrganizations/nucc.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+    - &Org1
+        Name: Org1MSP
+        ID: Org1MSP
+        MSPDir: crypto-config/peerOrganizations/org1.nucc.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin', 'Org1MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org1MSP.admin')"
+        # 设置锚节点
+        AnchorPeers:
+            - Host: peer0.org1.nucc.com
+              Port: 7051
+
+    - &Org2
+        Name: Org2MSP
+        ID: Org2MSP
+        MSPDir: crypto-config/peerOrganizations/org2.nucc.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin', 'Org2MSP.peer', 'Org2MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin', 'Org2MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org2MSP.admin')"
+        # 设置锚节点
+        AnchorPeers:
+            - Host: peer0.org2.nucc.com
+              Port: 9051
+    - &Org3
+        Name: Org3MSP
+        ID: Org3MSP
+        MSPDir: crypto-config/peerOrganizations/org3.nucc.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('Org3MSP.admin', 'Org3MSP.peer', 'Org3SP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('Org3MSP.admin', 'Org3MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('Org3MSP.admin')"
+        # 设置锚节点
+        AnchorPeers:
+            - Host: peer0.org3.nucc.com
+              Port: 9051
+
+################################################################################
+#   SECTION: Capabilities  能力的配置文件
+################################################################################
+Capabilities:
+    Channel: &ChannelCapabilities
+        V1_4_3: true
+        V1_3: false
+        V1_1: false
+    Orderer: &OrdererCapabilities
+        V1_4_2: true
+        V1_1: false
+
+    Application: &ApplicationCapabilities
+        V1_4_2: true
+        V1_3: false
+        V1_2: false
+        V1_1: false
+
+################################################################################
+#
+#   SECTION: Application
+#
+################################################################################
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    Capabilities:
+        <<: *ApplicationCapabilities
+################################################################################
+#
+#   SECTION: Orderer 排序节点配置
+#
+################################################################################
+Orderer: &OrdererDefaults
+    # Available types are "solo","kafka"  and "etcdraft"    排序节点共识算法  生产建议用etcdraft
+    OrdererType: solo
+
+    Addresses:
+        - orderer.nucc.com:7050
+
+    # Batch Timeout: 多长时间生成一个区块 2s
+    BatchTimeout: 10s
+    BatchSize:
+        # Max Message Count: 每个区块最多交易数 10
+        MaxMessageCount: 100
+        # Absolute Max Bytes: 每个区块最多的容量大小 99 MB
+        AbsoluteMaxBytes: 64 MB
+        # Preferred Max Bytes: 消息batch的首选项允许的字节数大小 512 KB
+        PreferredMaxBytes: 512 KB
+    Kafka:
+        # Brokers: 不建议使用kafka  未生效
+        Brokers:
+            - 127.0.0.1:9092
+    # orderertype is chosen.
+    EtcdRaft:
+        # The set of Raft replicas for this network. For the etcd/raft-based
+        # implementation, we expect every replica to also be an OSN. Therefore,
+        # a subset of the host:port items enumerated in this list should be
+        # replicated under the Orderer.Addresses key above.
+        Consenters:
+            - Host: orderer.nucc.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer.nucc.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer.nucc.com/tls/server.crt
+            - Host: orderer2.nucc.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer2.nucc.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer2.nucc.com/tls/server.crt
+            - Host: orderer3.nucc.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer3.nucc.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer3.nucc.com/tls/server.crt
+            - Host: orderer4.nucc.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer4.nucc.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer4.nucc.com/tls/server.crt
+            - Host: orderer5.nucc.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer5.nucc.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer5.nucc.com/tls/server.crt
+
+    # Organizations is the list of orgs which are defined as participants on
+    # the orderer side of the network
+    Organizations:
+
+    # Policies defines the set of policies at this level of the config tree
+    # For Orderer policies, their canonical path is
+    #   /Channel/Orderer/<PolicyName>
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        # BlockValidation specifies what signatures must be included in the block
+        # from the orderer for the peer to validate it.
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+################################################################################
+#
+#   CHANNEL
+#
+#   This section defines the values to encode into a config transaction or
+#   genesis block for channel related parameters.
+#
+################################################################################
+Channel: &ChannelDefaults
+    # Policies defines the set of policies at this level of the config tree
+    # For Channel policies, their canonical path is
+    #   /Channel/<PolicyName>
+    Policies:
+        # Who may invoke the 'Deliver' API
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        # Who may invoke the 'Broadcast' API
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        # By default, who may modify elements at this config level
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    # Capabilities describes the channel level capabilities, see the
+    # dedicated Capabilities section elsewhere in this file for a full
+    # description
+    Capabilities:
+        <<: *ChannelCapabilities
+
+################################################################################
+#
+#   Profile 总的概述文件
+#
+#   - Different configuration profiles may be encoded here to be specified
+#   as parameters to the configtxgen tool
+#
+################################################################################
+Profiles:
+    # OrgsOrdererGenesis区块名字 ，可以自定义，这个也是命令中的-profile参数对应参数
+    OrgsOrdererGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            #这个表示引用下面OrdererDefaults的属性
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        #定义了系统中包含的组织
+        Consortiums:
+            ## 联盟  SampleConsortium 名称可以改
+            SampleConsortium:
+                #系统中包含的组织
+                Organizations:
+                    - *Org1
+                    - *Org2
+                    - *Org3
+
+    ##通道 名称可以改
+    OrgsChannel:
+        Consortium: SampleConsortium  # 联盟名 和上面相呼应 258行
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Org1
+                - *Org2
+                - *Org3
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    SampleDevModeKafka:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: kafka
+            Kafka:
+                Brokers:
+                    - kafka.nucc.com:9092
+
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - <<: *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *Org1
+                    - *Org2
+
+    SampleMultiNodeEtcdRaft:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                    - Host: orderer.nucc.com
+                      Port: 7050
+                      ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer.nucc.com/tls/server.crt
+                      ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer.nucc.com/tls/server.crt
+                    - Host: orderer2.nucc.com
+                      Port: 7050
+                      ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer2.nucc.com/tls/server.crt
+                      ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer2.nucc.com/tls/server.crt
+                    - Host: orderer3.nucc.com
+                      Port: 7050
+                      ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer3.nucc.com/tls/server.crt
+                      ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer3.nucc.com/tls/server.crt
+                    - Host: orderer4.nucc.com
+                      Port: 7050
+                      ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer4.nucc.com/tls/server.crt
+                      ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer4.nucc.com/tls/server.crt
+                    - Host: orderer5.nucc.com
+                      Port: 7050
+                      ClientTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer5.nucc.com/tls/server.crt
+                      ServerTLSCert: crypto-config/ordererOrganizations/nucc.com/orderers/orderer5.nucc.com/tls/server.crt
+            Addresses:
+                - orderer.nucc.com:7050
+                - orderer2.nucc.com:7050
+                - orderer3.nucc.com:7050
+                - orderer4.nucc.com:7050
+                - orderer5.nucc.com:7050
+
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - <<: *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *Org1
+                    - *Org2

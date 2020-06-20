@@ -73,8 +73,8 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	fmt.Println("ex02 Invoke")
 	function, args := stub.GetFunctionAndParameters()
+	fmt.Printf("ex02 Invoke function:%s	arrgs:%v\n", function, args)
 	if function == "invoke" {
 		// Make payment of X units from A to B
 		return t.invoke(stub, args)
@@ -87,7 +87,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "set" {
 		return t.set(stub, args)
 	} else if function == "get" { // assume 'get' even if fn is nil
-		return t.set(stub, args)
+		return t.get(stub, args)
 	}
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
@@ -214,8 +214,8 @@ func (t *SimpleChaincode) set(stub shim.ChaincodeStubInterface, args []string) p
 
 	err := stub.PutState(args[0], []byte(args[1]))
 	if err != nil {
-		fmt.Println("Failed to set asset: %s", args[0])
-		return shim.Error("Failed to set asset: %s" + args[0])
+		fmt.Printf("Failed to set asset: %s \n", args[0])
+		return shim.Error("Failed to set asset:" + args[0])
 	}
 	return shim.Success([]byte(args[1]))
 }

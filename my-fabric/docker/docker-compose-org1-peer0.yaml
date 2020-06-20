@@ -1,0 +1,37 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  peer0.org1.example.com:
+networks:
+  examplefabric:
+
+services:
+  peer0.org1.example.com:
+    container_name: peer0.org1.example.cofm
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.org1.example.com                          # 当前peer节点的名字
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051                # 当前peer节点的地址信息
+#      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052       # Peer节点监听链码连接请求的地址。如果未设置该参数，将自动选择 节点地址的7052端口。
+#      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051       #  留言协议 启动的时候指定连接谁 一般连接自己
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051  # 为了被其他节点感知到，如果不设置别的节点不知道有该节点的存证
+      - CORE_PEER_LOCALMSPID=Org1MSP                              # peer 节点所属的组织ID
+
+    volumes:
+      - ../crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/crypto/peer/msp
+      - ../crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/crypto/peer/tls
+      - peer0.org1.example.com:/var/hyperledger/production
+    ports:
+      - 7051:7051   # 通讯
+      - 7053:7053   # 事件
+
+    networks:
+      - examplefabric

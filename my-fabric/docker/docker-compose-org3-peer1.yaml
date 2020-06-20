@@ -1,0 +1,37 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  peer1.org3.nucc.com:
+networks:
+  nuccfabric:
+
+services:
+  peer1.org3.nucc.com:
+    container_name: peer1.org3.nucc.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.org3.nucc.com                          # 当前peer节点的名字
+      - CORE_PEER_ADDRESS=peer1.org3.nucc.com:7051                # 当前peer节点的地址信息
+#      - CORE_PEER_CHAINCODEADDRESS=peer1.org3.nucc.com:7052       # Peer节点监听链码连接请求的地址。如果未设置该参数，将自动选择 节点地址的7052端口。
+#      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org3.nucc.com:7051       #  留言协议 启动的时候指定连接谁 一般连接自己
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org3.nucc.com:7051  # 为了被其他节点感知到，如果不设置别的节点不知道有该节点的存证
+      - CORE_PEER_LOCALMSPID=Org3MSP                              # peer 节点所属的组织ID
+
+    volumes:
+      - ../crypto-config/peerOrganizations/org3.nucc.com/peers/peer1.org3.nucc.com/msp:/etc/hyperledger/crypto/peer/msp
+      - ../crypto-config/peerOrganizations/org3.nucc.com/peers/peer1.org3.nucc.com/tls:/etc/hyperledger/crypto/peer/tls
+      - peer1.org3.nucc.com:/var/hyperledger/production
+    ports:
+      - 9151:7051   # 通讯
+      - 9153:7053   # 事件
+
+    networks:
+      - nuccfabric

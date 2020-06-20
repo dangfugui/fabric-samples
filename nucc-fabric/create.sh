@@ -2,7 +2,7 @@
 echo "通过  cryptogen工具 生成证书文件"
 cryptogen generate --config=./crypto-config.yaml
 echo "创建创世块文件 -genesis.block"
-configtxgen -profile TwoOrgsOrdererGenesis --configPath ./ -channelID nuccchannel -outputBlock ./channel-artifacts/genesis.block
+configtxgen -profile OrgsOrdererGenesis --configPath ./ -channelID nucc-sys-channel -outputBlock ./channel-artifacts/genesis.block
 
 echo "创建通道文件"
 configtxgen -profile OrgsChannel --configPath ./ -outputCreateChannelTx ./channel-artifacts/nuccchannel.tx -channelID nuccchannel

@@ -28,3 +28,11 @@ func TestExample02_Invoke(t *testing.T) {
 	//checkInvoke(t,stub,[][]byte{[]byte("voteUser"),[]byte("")})
 
 }
+
+// go test -v vote_test.go vote.go
+func TestExample03_Invoke(t *testing.T) {
+	fmt.Println("TestExample02_Invoke")
+	t.FailNow()
+	//checkInvoke(t,stub,[][]byte{[]byte("voteUser"),[]byte("")})
+
+}

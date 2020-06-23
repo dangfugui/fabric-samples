@@ -37,12 +37,12 @@ public class App{
 
         //查询链码
         QueryByChaincodeRequest req = client.newQueryProposalRequest();
-        ChaincodeID cid = ChaincodeID.newBuilder().setName("counter-cc").build();
+        ChaincodeID cid = ChaincodeID.newBuilder().setName("mycc").build();
         req.setChaincodeID(cid);
         req.setFcn("get");
         req.setArgs("c");
-//        ProposalResponse[] rsp = channel.queryByChaincode(req).toArray(new ProposalResponse[0]);
-//        System.out.format("rsp message => %s\n",rsp[0].getProposalResponse().getResponse().getPayload().toStringUtf8());
+        ProposalResponse[] rsp = channel.queryByChaincode(req).toArray(new ProposalResponse[0]);
+        System.out.format("rsp message => %s\n",rsp[0].getProposalResponse().getResponse().getPayload().toStringUtf8());
 
         //提交链码交易
         TransactionProposalRequest req2 = client.newTransactionProposalRequest();

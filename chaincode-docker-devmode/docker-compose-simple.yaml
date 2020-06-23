@@ -95,7 +95,7 @@ services:
       - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=example02
       - CORE_PEER_ADDRESS=peer:7051
-      - CORE_PEER_LOCALMSPID=DEFAULT
+      - CORE_PEER_LOCALMSPID=DEFAULT  # peer 所在的组织
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp
     working_dir: /opt/gopath/src/chaincode
     command: /bin/sh -c 'sleep 6000000'

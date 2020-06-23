@@ -28,3 +28,6 @@ services:
     command: peer node start
     volumes:
         - /var/run/:/host/var/run/
+        ## 时间
+        - /etc/localtime:/etc/localtime:ro
+        - /etc/timezone:/etc/timezone:ro

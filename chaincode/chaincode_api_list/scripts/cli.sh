@@ -25,7 +25,7 @@ peer chaincode invoke -n mycc -c '{"Args":["set","a","a2"]}' -C myc
 sleep 2
 peer chaincode invoke -n mycc -c '{"Args":["get","a"]}' -C myc
 sleep 5
-peer chaincode invoke -n mycc -c '{"Args":["history","a"]}' -C myc
+peer chaincode query -n mycc -c '{"Args":["history","a"]}' -C myc
 
 echo
 echo "==============================cli end============================"

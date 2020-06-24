@@ -104,6 +104,17 @@ Organizations:
             - Host: peer0.org2.example.com
               Port: 9051
 
+    - &Org1Idemix
+        # defaultorg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        name: idemixMSP1
+
+        # id to load the msp definition as
+        id: idemixMSPID1
+
+        msptype: idemix
+        mspdir: crypto-config/peerOrganizations/idemix-config
+
 ################################################################################
 #
 #   SECTION: Capabilities
@@ -353,6 +364,7 @@ Profiles:
                 Organizations:
                     - *Org1
                     - *Org2
+                    - *Org1Idemix
     TwoOrgsChannel:
         Consortium: SampleConsortium
         <<: *ChannelDefaults
@@ -361,6 +373,7 @@ Profiles:
             Organizations:
                 - *Org1
                 - *Org2
+                - *Org1Idemix
             Capabilities:
                 <<: *ApplicationCapabilities
 
@@ -388,7 +401,7 @@ Profiles:
                 Organizations:
                 - *Org1
                 - *Org2
-
+                - *Org1Idemix
     SampleMultiNodeEtcdRaft:
         <<: *ChannelDefaults
         Capabilities:
@@ -438,3 +451,4 @@ Profiles:
                 Organizations:
                 - *Org1
                 - *Org2
+                - *Org1Idemix

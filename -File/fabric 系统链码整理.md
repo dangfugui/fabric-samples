@@ -64,9 +64,11 @@ $ peer chaincode query -C "mychannel" -n mycc -c '{"Args":["get", "a"]}'
 https://guanpengchn.gitbooks.io/lazy-blog/content/blog/fabriczhong-de-lscc.html
  背书策略 key level 背书策略  特性调研之Identity Mixer  运维信息监控
 https://www.jianshu.com/u/24f06408a2a9
+https://www.jianshu.com/u/c322f8e08b3f
 ```
 
 #### 环签名相关关键字
 zkp
 Identity Mixer
 https://blog.csdn.net/yohjob/article/details/103619649
+

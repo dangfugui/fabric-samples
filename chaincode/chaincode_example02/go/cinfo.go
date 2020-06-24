@@ -16,12 +16,13 @@ func (t *CInfo) Cinfo(stub shim.ChaincodeStubInterface, args []string) pb.Respon
 	// Getting attributes from an idemix credential
 	ou, found, err := cid.GetAttributeValue(stub, "ou")
 	if err != nil {
-		return shim.Error("Failed to get attribute 'ou'")
+		log.Error("Failed to get attribute 'ou'", err)
+		//return shim.Error("Failed to get attribute 'ou'")
 	}
 	log.Infof("user ou: %v\tfound:%v\n", ou, found)
 	role, found, err := cid.GetAttributeValue(stub, "role")
 	if err != nil {
-		return shim.Error("Failed to get attribute 'role'")
+		//return shim.Error("Failed to get attribute 'role'")
 	}
 	log.Infof("user role: %v\tfound:%v\n", role, found)
 	return shim.Success(nil)

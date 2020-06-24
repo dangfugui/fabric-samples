@@ -111,7 +111,6 @@ public class ChaincodeExecuter {
         }
 
         for (ProposalResponse response : transactionPropResp) {
-
             if (response.getStatus() == ProposalResponse.Status.SUCCESS) {
                 String payload = new String(response.getChaincodeActionResponsePayload());
                 logger.info(String.format("[√] Got success response from peer %s => payload: %s", response.getPeer().getName(), payload));

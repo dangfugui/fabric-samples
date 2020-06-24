@@ -30,7 +30,7 @@ import org.hyperledger.fabric.sdk.exception.InvalidArgumentException;
 import org.hyperledger.fabric.sdk.exception.ProposalException;
 import org.hyperledger.fabric.sdk.exception.ServiceDiscoveryException;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
-
+// https://help.aliyun.com/document_detail/141500.html?spm=a2c4g.11186623.6.733.2805469a3BX9XJ
 public class MainFirst {
 
     private static final Log logger = LogFactory.getLog(MainFirst.class);
@@ -75,13 +75,13 @@ public class MainFirst {
             }
 //            NetworkConfig.OrgInfo clientOrg = networkConfig.getClientOrganization();
 //            NetworkConfig.CAInfo caInfo = clientOrg.getCertificateAuthorities().get(0);
-
 //            FabricUser user = getFabricUser(clientOrg, caInfo);
-
+//            User user = networkConfig.getPeerAdmin();
+            User user = buildUserByFile();
             HFClient client = HFClient.createNewInstance();
             client.setCryptoSuite(CryptoSuite.Factory.getCryptoSuite());
-            client.setUserContext(networkConfig.getPeerAdmin());
-
+//            client.setUserContext(networkConfig.getPeerAdmin());
+            client.setUserContext(user);
             Channel channel = client.loadChannelFromConfig(channelName, networkConfig);
 
             channel.initialize();
@@ -89,7 +89,7 @@ public class MainFirst {
             channel.registerBlockListener(blockEvent -> {
                 logger.info(String.format("Receive block event (number %s) from %s", blockEvent.getBlockNumber(), blockEvent.getPeer()));
             });
-//            printChannelInfo(client, channel);
+            printChannelInfo(client, channel);
             executeChaincode(client, channel);
 
             logger.info("Shutdown channel.");
@@ -99,6 +99,8 @@ public class MainFirst {
             logger.error("exception", e);
         }
     }
+
+
 
     private static void lineBreak() {
         logger.info("=============================================================");
@@ -110,15 +112,20 @@ public class MainFirst {
     {
         lineBreak();
         ChaincodeExecuter executer = new ChaincodeExecuter(chaincodeName, chaincodeVersion);
-        executer.executeTransaction(client, channel, false,"query", "a");
+        String key = "java_a1";
+        executer.executeTransaction(client, channel, false,"query", key);
 
 //        String newValue = String.valueOf(new Random().nextInt(1000));
-        executer.executeTransaction(client, channel, true,"set", "aa", "a1");
-        executer.executeTransaction(client, channel, false,"get", "aa");
+        executer.executeTransaction(client, channel, true,"set", key, "a1");
+        executer.executeTransaction(client, channel, false,"get", key);
 
         lineBreak();
-        executer.executeTransaction(client, channel, true,"set", "aa", "a2");
-        executer.executeTransaction(client, channel, false,"get", "aa");
+        executer.executeTransaction(client, channel, true,"set", key, "a2");
+        executer.executeTransaction(client, channel, false,"get", key);
+        executer.executeTransaction(client, channel, false,"history", key);
+        executer.executeTransaction(client, channel, false,"cinfo");
+
+
 
     }
     private static void printChannelInfo(HFClient client, Channel channel) throws
@@ -139,6 +146,15 @@ public class MainFirst {
         }
 
     }
+
+    private static User buildUserByFile() {
+        String bashPath = "C:\\Users\\admin\\go\\src\\github.com\\hyperledger\\fabric-samples\\first-network\\crypto-config\\peerOrganizations\\org1.example.com\\users\\User1@org1.example.com\\";
+        String keyFile = bashPath+"msp\\keystore\\priv_sk";
+        String certFile = bashPath +"msp\\signcerts\\User1@org1.example.com-cert.pem";
+        FabricUser user = new FabricUser("PeerUser1_Org1MSP_Org1","Org1MSP",keyFile,certFile);
+        return user;
+    }
+
 
 //    private static FabricUser getFabricUser(NetworkConfig.OrgInfo clientOrg, NetworkConfig.CAInfo caInfo) throws
 //            MalformedURLException, org.hyperledger.fabric_ca.sdk.exception.InvalidArgumentException, InfoException,
